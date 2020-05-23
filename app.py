@@ -2,7 +2,7 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 import os
-
+from flask_cors import CORS
 from exam_config_management import exam_setup_api
 from exam_process import exam_process_api
 from user_management import user_management_api
@@ -16,7 +16,7 @@ db = SQLAlchemy(app)
 app.register_blueprint(exam_process_api)
 app.register_blueprint(user_management_api)
 app.register_blueprint(exam_setup_api)
-
+CORS(app)
 #app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
 
 jwt = JWTManager(app)

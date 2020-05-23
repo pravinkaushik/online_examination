@@ -19,6 +19,26 @@ class UserObject:
         self.email = email
         self.roles = roles
 
+@user_management_api.route("/home")
+@jwt_required
+def home():
+    ret = {
+        'current_identity': get_jwt_identity(),  # test
+        'current_id': get_jwt_claims()['id'],
+        'current_roles': get_jwt_claims()['roles']  # ['foo', 'bar']
+    }
+    return jsonify(ret), 200
+
+@user_management_api.route("/")
+@jwt_required
+def accountList():
+    ret = {
+        'current_identity': get_jwt_identity(),  # test
+        'current_id': get_jwt_claims()['id'],
+        'current_roles': get_jwt_claims()['roles']  # ['foo', 'bar']
+    }
+    return jsonify(ret), 200
+
 @user_management_api.route('/login', methods=['POST'])
 def login():
     email = request.json.get('email', None)
@@ -39,7 +59,8 @@ def login():
 
     ret = {
         'access_token': create_access_token(identity=user, fresh=True),
-        'refresh_token': create_refresh_token(identity=user)
+        'refresh_token': create_refresh_token(identity=user),
+        'current_identity': email
     }
 
     return jsonify(ret), 200

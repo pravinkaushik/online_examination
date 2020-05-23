@@ -9,10 +9,8 @@ from service import exam_process_service
 
 exam_process_api = Blueprint('exam_process_api', __name__)
 
-@exam_process_api.route("/exam_process")
-@jwt_required
-def accountList():
-    return "list of accounts"
+
+
 
 # candidate_exam API
 @exam_process_api.route("/candidate_exam_prep", methods = ['POST'])
