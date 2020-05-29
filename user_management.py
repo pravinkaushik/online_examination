@@ -41,11 +41,13 @@ def accountList():
 
 @user_management_api.route('/login', methods=['POST'])
 def login():
+    print("===============")
     email = request.json.get('email', None)
     password = request.json.get('password', None)
-
+    print("===============" + email + password)
     user = validate_user(email, password)
     if user is None:
+        print("user.id")
         return jsonify({"msg": "Bad username or password"}), 401
     print(user.id)
     # Create an example UserObject
@@ -62,7 +64,7 @@ def login():
         'refresh_token': create_refresh_token(identity=user),
         'current_identity': email
     }
-
+    print(ret)
     return jsonify(ret), 200
 
 

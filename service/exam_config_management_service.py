@@ -12,9 +12,10 @@ def update_exam_config(exam_config):
     session_exam_config_app.query(ExamConfig).filter_by(id=exam_config.id,
                                                         exam_owner_id=exam_config.exam_owner_id).update(
         {'random_question': exam_config.random_question, 'start_time': exam_config.start_time,
-         'end_time': exam_config.end_time,
+         'end_time': exam_config.end_time, 'question_per_page': exam_config.question_per_page,
          'duration_minute': exam_config.duration_minute, 'exam_title': exam_config.exam_title,
-         'exam_name': exam_config.exam_name, 'is_multiple_choice': exam_config.is_multiple_choice})
+         'exam_name': exam_config.exam_name, 'time_zone': exam_config.time_zone,
+         'time_zone': exam_config.time_zone})
     session_exam_config_app.commit()
 
 
@@ -23,6 +24,14 @@ def delete_exam_config(exam_config):
     session_exam_config_app.delete(exam_config)
     session_exam_config_app.commit()
 
+
+def get_exam_config_all(exam_owner_id):
+    exam_config_all = ExamConfig.query.filter_by(exam_owner_id=exam_owner_id).all()
+    return exam_config_all
+
+def get_exam_config(exam_config_id, exam_owner_id):
+    exam_config = ExamConfig.query.filter_by(id=exam_config_id, exam_owner_id=exam_owner_id).first()
+    return exam_config
 
 ###################################################################
 def create_candidate(candidate):
@@ -42,6 +51,13 @@ def delete_candidate(candidate):
     session_candidate_app.delete(candidate)
     session_candidate_app.commit()
 
+def get_candidate_all(exam_owner_id, exam_config_id):
+    candidate_all = Candidate.query.filter_by(exam_owner_id=exam_owner_id, exam_config_id=exam_config_id).all()
+    return candidate_all
+
+def get_candidate(candidate_id, exam_owner_id):
+    candidate = Candidate.query.filter_by(id=candidate_id, exam_owner_id=exam_owner_id).first()
+    return candidate
 
 ###################################################################
 def create_exam_question(exam_question):
