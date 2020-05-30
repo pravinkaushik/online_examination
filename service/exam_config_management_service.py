@@ -71,7 +71,9 @@ def update_exam_question(exam_question):
                                                               exam_owner_id=exam_question.exam_owner_id).update(
         {'question': exam_question.question, 'choice1': exam_question.choice1, 'choice2': exam_question.choice2,
          'choice3': exam_question.choice3, 'choice4': exam_question.choice4, 'choice5': exam_question.choice5,
-         'correct_answer': exam_question.correct_answer})
+         'is_choice1_correct': exam_question.is_choice1_correct, 'is_choice2_correct': exam_question.is_choice2_correct,
+         'is_choice3_correct': exam_question.is_choice3_correct, 'is_choice4_correct': exam_question.is_choice4_correct,
+         'is_choice5_correct': exam_question.is_choice5_correct})
     session_exam_questions_app.commit()
 
 
@@ -80,3 +82,11 @@ def delete_exam_question(exam_question):
                                                   exam_owner_id=exam_question.exam_owner_id).first()
     session_exam_questions_app.delete(exam_question)
     session_exam_questions_app.commit()
+
+def get_exam_question_all(exam_owner_id, exam_config_id):
+    question_all = ExamQuestions.query.filter_by(exam_owner_id=exam_owner_id, exam_config_id=exam_config_id).all()
+    return question_all
+
+def get_exam_question(exam_question_id, exam_owner_id):
+    exam_question = ExamQuestions.query.filter_by(id=exam_question_id, exam_owner_id=exam_owner_id).first()
+    return exam_question

@@ -142,6 +142,21 @@ def delete_exam_question():
     exam_config_management_service.delete_exam_question(exam_question)
     return jsonify("001"), 200
 
+@exam_setup_api.route("/exam_question/<int:exam_question_id>", methods = ['GET'])
+@jwt_required
+def get_exam_question(exam_question_id):
+    exam_owner_id = get_jwt_claims()['id']
+    exam_question = exam_config_management_service.get_exam_question(exam_question_id, exam_owner_id )
+    return jsonify(exam_question.serialize), 200
+
+@exam_setup_api.route("/exam_question_all/<int:exam_config_id>", methods = ['GET'])
+@jwt_required
+def get_exam_question_all(exam_config_id):
+    print(get_jwt_claims()['id'])
+    exam_owner_id = get_jwt_claims()['id']
+    exam_question_all = exam_config_management_service.get_exam_question_all(exam_owner_id, exam_config_id)
+    return jsonify([i.serialize for i in exam_question_all]), 200
+
 def date_hook(json_dict):
     for (key, value) in json_dict.items():
         try:
