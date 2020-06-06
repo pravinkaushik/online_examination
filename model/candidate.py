@@ -13,7 +13,9 @@ class Candidate(db.Model):
     exam_owner_id = db.Column(db.Integer)
     exam_config_id = db.Column(db.Integer)
     password_hash = db.Column(db.String(128))
-    c_name = db.Column(db.String(100));
+    c_name = db.Column(db.String(100))
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
 
     def __repr__(self):
         return '<User {}>'.format(self.email)

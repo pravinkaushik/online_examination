@@ -24,12 +24,13 @@ class ExamConfig(db.Model):
     exam_title = db.Column(db.String(45))
     exam_name = db.Column(db.String(45))
     time_zone = db.Column(db.String(45))
+    total_question = db.Column(db.Integer)
 
     def __repr__(self):
         return '<User {}>'.format(self.exam_owner_id)
 
     def __init__(self, id, exam_owner_id, random_question, start_time, end_time, duration_minute, exam_title, exam_name, time_zone, question_per_page,
-                 *args, **kwargs):
+                 total_question, *args, **kwargs):
         self.id = id
         self.exam_owner_id = exam_owner_id
         self.random_question = random_question
@@ -40,6 +41,7 @@ class ExamConfig(db.Model):
         self.exam_title = exam_title
         self.exam_name = exam_name
         self.time_zone = time_zone
+        self.total_question = total_question
 
     @property
     def serialize(self):
@@ -54,5 +56,6 @@ class ExamConfig(db.Model):
            'exam_name': self.exam_name,
            'start_time': datetime.timestamp(self.start_time),
            'end_time': datetime.timestamp(self.end_time),
-           'time_zone': self.time_zone
+           'time_zone': self.time_zone,
+           'total_question': self.total_question
        }

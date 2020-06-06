@@ -15,7 +15,7 @@ def update_exam_config(exam_config):
          'end_time': exam_config.end_time, 'question_per_page': exam_config.question_per_page,
          'duration_minute': exam_config.duration_minute, 'exam_title': exam_config.exam_title,
          'exam_name': exam_config.exam_name, 'time_zone': exam_config.time_zone,
-         'time_zone': exam_config.time_zone})
+         'time_zone': exam_config.time_zone, 'total_question': exam_config.total_question})
     session_exam_config_app.commit()
 
 
@@ -32,6 +32,11 @@ def get_exam_config_all(exam_owner_id):
 def get_exam_config(exam_config_id, exam_owner_id):
     exam_config = ExamConfig.query.filter_by(id=exam_config_id, exam_owner_id=exam_owner_id).first()
     return exam_config
+
+def get_exam_config_by_id(exam_config_id):
+    exam_config = ExamConfig.query.filter_by(id=exam_config_id).first()
+    return exam_config
+
 
 ###################################################################
 def create_candidate(candidate):
@@ -57,6 +62,10 @@ def get_candidate_all(exam_owner_id, exam_config_id):
 
 def get_candidate(candidate_id, exam_owner_id):
     candidate = Candidate.query.filter_by(id=candidate_id, exam_owner_id=exam_owner_id).first()
+    return candidate
+
+def candidate_login(email, exam_config_id, password_hash):
+    candidate = Candidate.query.filter_by(email=email, exam_config_id=exam_config_id, password_hash=password_hash).first()
     return candidate
 
 ###################################################################

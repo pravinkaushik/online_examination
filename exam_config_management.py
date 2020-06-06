@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import (
-     get_jwt_claims, jwt_required
+     get_jwt_claims, jwt_required, verify_jwt_in_request
 )
 from datetime import datetime
 import json
@@ -9,17 +9,24 @@ from model.candidate import Candidate
 from model.exam_questions import ExamQuestions
 from markupsafe import escape
 from service import exam_config_management_service
+from functools import wraps
 
 exam_setup_api = Blueprint('exam_setup_api', __name__)
 
-# exam_config API
-@exam_setup_api.route("/validate_login", methods = ['GET'])
-@jwt_required
-def validate_login():
-    return jsonify("001"), 200
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        if claims['roles'][0] != 'exam_owner':
+            return jsonify(msg='not exam owner!'), 403
+        else:
+            return fn(*args, **kwargs)
+    return wrapper
 
 # exam_config API
 @exam_setup_api.route("/exam_config", methods = ['POST'])
+@admin_required
 @jwt_required
 def create_exam_config():
     j_str = json.dumps(request.get_json())
@@ -30,6 +37,7 @@ def create_exam_config():
     return jsonify("001"), 200
 
 @exam_setup_api.route("/exam_config", methods = ['PUT'])
+@admin_required
 @jwt_required
 def update_exam_config():
     j_str = json.dumps(request.get_json())
@@ -40,6 +48,7 @@ def update_exam_config():
     return jsonify("001"), 200
 
 @exam_setup_api.route("/exam_config", methods = ['DELETE'])
+@admin_required
 @jwt_required
 def delete_exam_config():
     j_str = json.dumps(request.get_json())
@@ -50,6 +59,7 @@ def delete_exam_config():
     return jsonify("001"), 200
 
 @exam_setup_api.route("/exam_config_all", methods = ['GET'])
+@admin_required
 @jwt_required
 def get_exam_config_all():
     print(get_jwt_claims()['id'])
@@ -58,6 +68,7 @@ def get_exam_config_all():
     return jsonify([i.serialize for i in exam_config_all]), 200
 
 @exam_setup_api.route("/exam_config/<int:exam_config_id>", methods = ['GET'])
+@admin_required
 @jwt_required
 def get_exam_config(exam_config_id):
     exam_owner_id = get_jwt_claims()['id']
@@ -66,6 +77,7 @@ def get_exam_config(exam_config_id):
 
 # candidate API
 @exam_setup_api.route("/candidate_all/<int:exam_config_id>", methods = ['GET'])
+@admin_required
 @jwt_required
 def get_candidate_all(exam_config_id):
     print(get_jwt_claims()['id'])
@@ -74,6 +86,7 @@ def get_candidate_all(exam_config_id):
     return jsonify([i.serialize for i in candidate_all]), 200
 
 @exam_setup_api.route("/candidate", methods = ['POST'])
+@admin_required
 @jwt_required
 def create_candidate():
     j_str = json.dumps(request.get_json())
@@ -85,6 +98,7 @@ def create_candidate():
     return jsonify("001"), 200
 
 @exam_setup_api.route("/candidate", methods = ['PUT'])
+@admin_required
 @jwt_required
 def update_candidate():
     j_str = json.dumps(request.get_json())
@@ -95,6 +109,7 @@ def update_candidate():
     return jsonify("001"), 200
 
 @exam_setup_api.route("/candidate", methods = ['DELETE'])
+@admin_required
 @jwt_required
 def delete_candidate():
     j_str = json.dumps(request.get_json())
@@ -105,6 +120,7 @@ def delete_candidate():
     return jsonify("001"), 200
 
 @exam_setup_api.route("/candidate/<int:candidate_id>", methods = ['GET'])
+@admin_required
 @jwt_required
 def get_candidate(candidate_id):
     exam_owner_id = get_jwt_claims()['id']
@@ -113,6 +129,7 @@ def get_candidate(candidate_id):
 
 # exam_question API
 @exam_setup_api.route("/exam_question", methods = ['POST'])
+@admin_required
 @jwt_required
 def create_exam_question():
     j_str = json.dumps(request.get_json())
@@ -123,6 +140,7 @@ def create_exam_question():
     return jsonify("001"), 200
 
 @exam_setup_api.route("/exam_question", methods = ['PUT'])
+@admin_required
 @jwt_required
 def update_exam_question():
     j_str = json.dumps(request.get_json())
@@ -133,6 +151,7 @@ def update_exam_question():
     return jsonify("001"), 200
 
 @exam_setup_api.route("/exam_question", methods = ['DELETE'])
+@admin_required
 @jwt_required
 def delete_exam_question():
     j_str = json.dumps(request.get_json())
@@ -143,6 +162,7 @@ def delete_exam_question():
     return jsonify("001"), 200
 
 @exam_setup_api.route("/exam_question/<int:exam_question_id>", methods = ['GET'])
+@admin_required
 @jwt_required
 def get_exam_question(exam_question_id):
     exam_owner_id = get_jwt_claims()['id']
@@ -150,6 +170,7 @@ def get_exam_question(exam_question_id):
     return jsonify(exam_question.serialize), 200
 
 @exam_setup_api.route("/exam_question_all/<int:exam_config_id>", methods = ['GET'])
+@admin_required
 @jwt_required
 def get_exam_question_all(exam_config_id):
     print(get_jwt_claims()['id'])

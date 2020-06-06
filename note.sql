@@ -60,4 +60,23 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1
 
 
+SELECT ce.id, ce.exam_questions_id, ce.candidate_id, ce.exam_config_id, ce.is_choice1_correct, ce.is_choice2_correct, ce.is_choice3_correct, ce.is_choice4_correct, ce.is_choice5_correct,
+eq.question, eq.choice1, eq.choice2, eq.choice3, eq.choice4, eq.choice5, eq.is_multiple_choice, eq.negative_marks, eq.positive_marks
+FROM candidate_exam ce inner join exam_questions eq on ce.exam_questions_id = eq.id 
+WHERE ce.candidate_id=13 and ce.exam_config_id=12;
+
+    result = session_candidate_exam_app.execute(
+        'SELECT ce.id, ce.exam_questions_id, ce.candidate_id, ce.exam_config_id, ce.is_choice1_correct, ce.is_choice2_correct, ce.is_choice3_correct, ce.is_choice4_correct, ce.is_choice5_correct,\
+        eq.question, eq.choice1, eq.choice2, eq.choice3, eq.choice4, eq.choice5, eq.is_multiple_choice, eq.negative_marks, eq.positive_marks\
+        FROM candidate_exam ce inner join exam_questions eq on ce.exam_questions_id = eq.id \
+        WHERE ce.candidate_id=:val1 and ce.exam_config_id=:val2 ORDER BY ce.id DESC LIMIT offset, row_count',
+        {'val1': candidate_id, 'val2': exam_config_id}).paginate(page,per_page,error_out=False)
+
+SELECT ce.id, ce.exam_questions_id, ce.candidate_id, ce.exam_config_id, ce.is_choice1_correct, ce.is_choice2_correct, ce.is_choice3_correct, ce.is_choice4_correct, ce.is_choice5_correct,
+eq.question, eq.choice1, eq.choice2, eq.choice3, eq.choice4, eq.choice5, eq.is_multiple_choice, eq.negative_marks, eq.positive_marks
+FROM candidate_exam ce inner join exam_questions eq on ce.exam_questions_id = eq.id 
+WHERE ce.candidate_id=13 and ce.exam_config_id=12 ORDER BY ce.id DESC LIMIT offset, row_count;
+
 pip install flask-marshmallow
+pip install Flask-Mail
+pip install requests

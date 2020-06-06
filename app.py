@@ -37,7 +37,5 @@ def add_claims_to_access_token(user):
 def user_identity_lookup(user):
     return user.email
 
-
-
 if __name__ == '__main__':
     app.run()
