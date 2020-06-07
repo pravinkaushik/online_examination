@@ -82,7 +82,7 @@ def update_exam_question(exam_question):
          'choice3': exam_question.choice3, 'choice4': exam_question.choice4, 'choice5': exam_question.choice5,
          'is_choice1_correct': exam_question.is_choice1_correct, 'is_choice2_correct': exam_question.is_choice2_correct,
          'is_choice3_correct': exam_question.is_choice3_correct, 'is_choice4_correct': exam_question.is_choice4_correct,
-         'is_choice5_correct': exam_question.is_choice5_correct})
+         'is_choice5_correct': exam_question.is_choice5_correct, 'question_type':exam_question.question_type})
     session_exam_questions_app.commit()
 
 

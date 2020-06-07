@@ -21,7 +21,7 @@ class ExamQuestions(db.Model):
     is_choice3_correct = db.Column(db.Integer)
     is_choice4_correct = db.Column(db.Integer)
     is_choice5_correct = db.Column(db.Integer)
-    is_multiple_choice = db.Column(db.Integer)
+    question_type = db.Column(db.Integer)
     exam_config_id = db.Column(db.Integer)
     positive_marks = db.Column(db.Integer)
     negative_marks = db.Column(db.Integer)
@@ -30,7 +30,7 @@ class ExamQuestions(db.Model):
         return '<User {}>'.format(self.exam_owner_id)
 
     def __init__(self, id, exam_owner_id, question, choice1, choice2, choice3, choice4, choice5, is_choice1_correct, is_choice2_correct, 
-            is_choice3_correct, is_choice4_correct, is_choice5_correct, is_multiple_choice, exam_config_id, positive_marks, negative_marks,
+            is_choice3_correct, is_choice4_correct, is_choice5_correct, question_type, exam_config_id, positive_marks, negative_marks,
             *args, **kwargs):
         self.id = id
         self.exam_owner_id = exam_owner_id
@@ -45,7 +45,7 @@ class ExamQuestions(db.Model):
         self.is_choice3_correct = is_choice3_correct 
         self.is_choice4_correct = is_choice4_correct 
         self.is_choice5_correct = is_choice5_correct 
-        self.is_multiple_choice = is_multiple_choice
+        self.question_type = question_type
         self.exam_config_id = exam_config_id
         self.positive_marks = positive_marks
         self.negative_marks = negative_marks
@@ -67,7 +67,7 @@ class ExamQuestions(db.Model):
         'is_choice3_correct': self.is_choice3_correct,
         'is_choice4_correct': self.is_choice4_correct,
         'is_choice5_correct': self.is_choice5_correct,
-        'is_multiple_choice': self.is_multiple_choice,
+        'question_type': self.question_type,
         'exam_config_id': self.exam_config_id,
         'positive_marks': self.positive_marks,
         'negative_marks': self.negative_marks

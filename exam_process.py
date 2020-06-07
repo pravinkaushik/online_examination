@@ -45,6 +45,16 @@ def update_candidate_exam():
         exam_process_service.update_candidate_exam(candidate_exam)
     return jsonify("001"), 200
 
+@exam_process_api.route("/candidate_exam_finish", methods = ['PUT'])
+@candidate_required
+@jwt_required
+def candidate_exam_finish():
+    exam_config_id = request.json.get('exam_config_id', None)
+    candidate_id = get_jwt_claims()['id']
+    exam_process_service.candidate_exam_finish(exam_config_id, candidate_id)
+    return jsonify("001"), 200
+
+
 @exam_process_api.route("/exam_question/<int:exam_config_id>/<int:page>", methods = ['GET'])
 @candidate_required
 @jwt_required
