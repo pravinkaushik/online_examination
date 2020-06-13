@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, current_app
 from datetime import datetime
-
+import pytz
 exam_config_app = Flask(__name__)
 with exam_config_app.app_context():
     db = SQLAlchemy(current_app)
@@ -13,13 +13,21 @@ def dump_datetime(value):
         return None
     return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
 
+
+def convert_local(time_zone, utc_time):
+    tz = pytz.timezone(time_zone)
+    local_dt = utc_time.replace(tzinfo=pytz.utc).astimezone(tz)
+    local_dt_none_tz = local_dt.replace(tzinfo=None)
+    return local_dt_none_tz
+
+
 class ExamConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     exam_owner_id = db.Column(db.Integer)
     random_question = db.Column(db.Integer)
     question_per_page = db.Column(db.Integer)
-    start_time = db.Column(db.DateTime, default=datetime.utcnow)
-    end_time = db.Column(db.DateTime, default=datetime.utcnow)
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
     duration_minute = db.Column(db.Integer)
     exam_title = db.Column(db.String(45))
     exam_name = db.Column(db.String(45))
@@ -46,6 +54,8 @@ class ExamConfig(db.Model):
     @property
     def serialize(self):
        """Return object data in easily serializable format"""
+       s = convert_local(self.time_zone, self.start_time)
+       e = convert_local(self.time_zone, self.end_time)
        return {
            'id'         : self.id,
            'exam_owner_id': self.exam_owner_id,
@@ -54,8 +64,8 @@ class ExamConfig(db.Model):
            'question_per_page': self.question_per_page,
            'exam_title': self.exam_title,
            'exam_name': self.exam_name,
-           'start_time': datetime.timestamp(self.start_time),
-           'end_time': datetime.timestamp(self.end_time),
+           'start_time': datetime.timestamp(s),
+           'end_time': datetime.timestamp(e),
            'time_zone': self.time_zone,
            'total_question': self.total_question
        }

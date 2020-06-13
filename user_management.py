@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_jwt_extended import (
-     get_jwt_claims, JWTManager, jwt_required, create_access_token,
+    get_jwt_claims, JWTManager, jwt_required, create_access_token,
     jwt_refresh_token_required, create_refresh_token,
     get_jwt_identity, fresh_jwt_required
 )
@@ -12,7 +12,9 @@ import requests
 import json
 import random
 import string
+
 user_management_api = Blueprint('user_management_api', __name__)
+
 
 # This is an example of a complex object that we could build
 # a JWT from. In practice, this will likely be something
@@ -23,8 +25,9 @@ class UserObject:
         self.email = email
         self.roles = roles
 
+
 # exam_config API
-@user_management_api.route("/validate_login", methods = ['GET'])
+@user_management_api.route("/validate_login", methods=['GET'])
 @jwt_required
 def validate_login():
     return jsonify("001"), 200
@@ -40,44 +43,36 @@ def home():
     }
     return jsonify(ret), 200
 
+
 @user_management_api.route("/")
 @jwt_required
-def accountList():
+def test_api():
     ret = {
-        'current_identity': get_jwt_identity(),  # test
-        'current_id': get_jwt_claims()['id'],
-        'current_roles': get_jwt_claims()['roles']  # ['foo', 'bar']
+        'test': "Examination API Working"  # ['foo', 'bar']
     }
     return jsonify(ret), 200
 
+
 @user_management_api.route('/login_exam', methods=['POST'])
 def login_exam():
-    print("===============")
     exam_config_id = request.json.get('exam_config_id', None)
     email = request.json.get('email', None)
     password = request.json.get('password', None)
-    print("===============" + exam_config_id  + email + password)
     candidate = exam_config_management_service.candidate_login(email, exam_config_id, password)
     if candidate is None:
-        print("candidate.id")
-        return jsonify({"msg": "Bad username or password"}), 401
-    print(candidate.id)
-    # Create an example UserObject
+        return jsonify({"error": "Bad username or password"}), 401
+    if candidate == "C":
+        return jsonify({"error": "You Have Already Finished Examination"}), 403
+    if candidate == "TO":
+        return jsonify({"error": "You are too late, Examination interval has been passed"}), 403
+
     user = UserObject(id=candidate.id, email=candidate.email, roles=['candidate'])
-
-    # We can now pass this complex object directly to the
-    # create_access_token method. This will allow us to access
-    # the properties of this object in the user_claims_loader
-    # function, and get the identity of this object from the
-    # user_identity_loader function.
-
     ret = {
         'access_token': create_access_token(identity=user, fresh=True),
         'refresh_token': create_refresh_token(identity=user),
         'current_identity': email,
         'role': 'candidate'
     }
-    print(ret)
     return jsonify(ret), 200
 
 
@@ -90,7 +85,7 @@ def login():
     user = user_management_service.validate_user(email, password)
     if user is None:
         print("user.id")
-        return jsonify({"msg": "Bad username or password"}), 401
+        return jsonify({"error": "Bad username or password"}), 401
     print(user.id)
     # Create an example UserObject
     user = UserObject(id=user.id, email=user.email, roles=['exam_owner'])
@@ -117,14 +112,14 @@ def signup_social_media():
     auth_token = request.json.get('auth_token', None)
     email = isValidSocialToken(auth_token, provider)
 
-    UserObj = user_management_service.validate_user_email(email)
-    if UserObj is None:
-        UserObj = User(0, email, randomString(), "", 1, 1)
-        user_management_service.create_user(UserObj)
-        UserObj = user_management_service.validate_user_email(email)
+    user_obj = user_management_service.validate_user_email(email)
+    if user_obj is None:
+        user_obj = User(0, email, random_string(), "", 1, 1)
+        user_management_service.create_user(user_obj)
+        user_obj = user_management_service.validate_user_email(email)
 
     # Create an example UserObject
-    user = UserObject(id=UserObj.id, email=UserObj.email, roles=['exam_owner'])
+    user = UserObject(id=user_obj.id, email=user_obj.email, roles=['exam_owner'])
 
     ret = {
         'access_token': create_access_token(identity=user, fresh=True),
@@ -138,18 +133,11 @@ def signup_social_media():
 
 @user_management_api.route('/signup', methods=['POST'])
 def signup():
-    print("===============")
-
     email = request.json.get('email', None)
     password = request.json.get('password', None)
-
-    print("===============" + email + password )
-
-
     ret = {
-        'message': "Activation linkhas been send to Your Email."
+        'message': "Activation link has been send to Your Email."
     }
-    print(ret)
     return jsonify(ret), 200
 
 
@@ -186,12 +174,14 @@ def fresh_login():
     ret = {'access_token': new_token}
     return jsonify(ret), 200
 
+
 # Only fresh JWTs can access this endpoint
 @user_management_api.route('/protected-fresh', methods=['GET'])
 @fresh_jwt_required
 def protected_fresh():
     username = get_jwt_identity()
     return jsonify(fresh_logged_in_as=username), 200
+
 
 @user_management_api.route('/protected', methods=['GET'])
 @jwt_required
@@ -205,20 +195,20 @@ def protected():
 
 
 def isValidSocialToken(token, provider):
-    if(provider == "FB"):
-        API_ENDPOINT = "https://graph.facebook.com/me?fields=email,name&access_token="+token
-        r = requests.get(url = API_ENDPOINT)
+    if (provider == "FB"):
+        API_ENDPOINT = "https://graph.facebook.com/me?fields=email,name&access_token=" + token
+        r = requests.get(url=API_ENDPOINT)
         data = json.loads(r.text)
-        email = data.get("email",None)
+        email = data.get("email", None)
         return email
     else:
-        API_ENDPOINT = "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token="+token
-        r = requests.get(url = API_ENDPOINT)
+        API_ENDPOINT = "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + token
+        r = requests.get(url=API_ENDPOINT)
         data = json.loads(r.text)
-        email = data.get("email",None)
+        email = data.get("email", None)
         return email
 
 
-def randomString(stringLength=8):
+def random_string(string_length=8):
     letters = string.ascii_letters
-    return ''.join(random.choice(letters) for i in range(stringLength))
+    return ''.join(random.choice(letters) for i in range(string_length))
