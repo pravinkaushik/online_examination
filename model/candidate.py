@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, current_app
 
 candidate_app = Flask(__name__)
+
 with candidate_app.app_context():
     db = SQLAlchemy(current_app)
     session_candidate_app = db.session
@@ -30,12 +31,12 @@ class Candidate(db.Model):
 
     @property
     def serialize(self):
-       """Return object data in easily serializable format"""
-       return {
-           'id'         : self.id,
-           'exam_owner_id': self.exam_owner_id,
-           'email': self.email,
-           'c_name': self.c_name,
-#           'password_hash': self.password_hash,
-           'exam_config_id': self.exam_config_id
-       }
+        """Return object data in easily serializable format"""
+        return {
+            'id': self.id,
+            'exam_owner_id': self.exam_owner_id,
+            'email': self.email,
+            'c_name': self.c_name,
+            #           'password_hash': self.password_hash,
+            'exam_config_id': self.exam_config_id
+        }

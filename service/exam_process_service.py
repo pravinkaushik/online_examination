@@ -11,7 +11,9 @@ from model.candidate import session_candidate_app, Candidate
 def prepare_candidate_exam(exam_config_id, candidate_id):
     # validation required exam_owner_id belongs same user
     dt = datetime.utcnow()
-    count = CandidateExam.query.filter_by(candidate_id=candidate_id, exam_config_id=exam_config_id).count()
+    count = session_candidate_exam_app.query(CandidateExam).\
+        filter_by(candidate_id=candidate_id, exam_config_id=exam_config_id).count()
+    session_candidate_exam_app.commit()
     if count == 0:
         result = session_candidate_exam_app.execute(
             'DELETE from candidate_exam where candidate_id =:val1 and exam_config_id = :val2',
@@ -40,7 +42,7 @@ def get_exam_questions(candidate_id, exam_config_id, page, per_page):
         'ce.exam_questions_id = eq.id WHERE ce.candidate_id=:val1 and ce.exam_config_id=:val2 ORDER BY ce.id LIMIT '
         ':offset, :row_count ',
         {'val1': candidate_id, 'val2': exam_config_id, 'offset': offset, 'row_count': per_page})
-
+    session_candidate_exam_app.commit()
     return result
 
 

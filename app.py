@@ -6,12 +6,14 @@ from flask_cors import CORS
 from exam_config_management import exam_setup_api
 from exam_process import exam_process_api
 from user_management import user_management_api
+from flask_mail import Mail
 
 config_obj = os.environ.get("DIAG_CONFIG_MODULE", "config")
 app = Flask(__name__)
 app.config.from_object(config_obj)
 
 db = SQLAlchemy(app)
+mail = Mail(app)
 
 app.register_blueprint(exam_process_api)
 app.register_blueprint(user_management_api)

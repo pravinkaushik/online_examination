@@ -1,8 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, current_app
+import os
 
 exam_questions_app = Flask(__name__)
 with exam_questions_app.app_context():
+    config_obj = os.environ.get("DIAG_CONFIG_MODULE", "config")
+    exam_questions_app.config.from_object(config_obj)
     db = SQLAlchemy(current_app)
     session_exam_questions_app = db.session
 
@@ -29,9 +32,9 @@ class ExamQuestions(db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.exam_owner_id)
 
-    def __init__(self, id, exam_owner_id, question, choice1, choice2, choice3, choice4, choice5, is_choice1_correct, is_choice2_correct, 
-            is_choice3_correct, is_choice4_correct, is_choice5_correct, question_type, exam_config_id, positive_marks, negative_marks,
-            *args, **kwargs):
+    def __init__(self, id, exam_owner_id, question, choice1, choice2, choice3, choice4, choice5, is_choice1_correct,
+                 is_choice2_correct, is_choice3_correct, is_choice4_correct, is_choice5_correct, question_type,
+                 exam_config_id, positive_marks, negative_marks, *args, **kwargs):
         self.id = id
         self.exam_owner_id = exam_owner_id
         self.question = question

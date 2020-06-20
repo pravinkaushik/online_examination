@@ -1,3 +1,4 @@
+import decimal
 import string
 
 from flask import Blueprint, jsonify, request
@@ -6,11 +7,16 @@ from flask_jwt_extended import (
 )
 from datetime import datetime
 import json
+from json import JSONEncoder
+from decimal import Decimal
 import random
+
+from sqlalchemy.ext.declarative import DeclarativeMeta
+
 from model.exam_config import ExamConfig
 from model.candidate import Candidate
 from model.exam_questions import ExamQuestions
-from service import exam_config_management_service
+from service import exam_config_management_service, email_service
 from functools import wraps
 from flask import Flask, flash, request, redirect, url_for
 import pytz
@@ -24,7 +30,7 @@ def admin_required(fn):
         verify_jwt_in_request()
         claims = get_jwt_claims()
         if claims['roles'][0] != 'exam_owner':
-            return jsonify(msg='not exam owner!'), 403
+            return jsonify({"error": "Invalid User"}), 403
         else:
             return fn(*args, **kwargs)
 
@@ -93,7 +99,6 @@ def get_exam_config(exam_config_id):
 @admin_required
 @jwt_required
 def get_candidate_all(exam_config_id):
-    print(get_jwt_claims()['id'])
     exam_owner_id = get_jwt_claims()['id']
     candidate_all = exam_config_management_service.get_candidate_all(exam_owner_id, exam_config_id)
     return jsonify([i.serialize for i in candidate_all]), 200
@@ -108,7 +113,22 @@ def create_candidate():
     candidate = Candidate(**j)
     candidate.exam_owner_id = get_jwt_claims()['id']
     candidate.password_hash = random_string()
+    exam_config = exam_config_management_service.get_exam_config_by_id(candidate.exam_config_id)
+    email_service.send_email_invitation(candidate.email, candidate.exam_config_id, exam_config.exam_name,
+                                        candidate.password_hash, exam_config.exam_title)
     exam_config_management_service.create_candidate(candidate)
+    return jsonify("001"), 200
+
+
+@exam_setup_api.route("/candidate_all/<int:candidate_id>", methods=['GET'])
+@admin_required
+@jwt_required
+def resend_invitation(candidate_id):
+    exam_owner_id = get_jwt_claims()['id']
+    candidate = exam_config_management_service.get_candidate(candidate_id, exam_owner_id)
+    exam_config = exam_config_management_service.get_exam_config_by_id(candidate.exam_config_id)
+    email_service.send_email_invitation(candidate.email, candidate.exam_config_id, exam_config.exam_name,
+                                        candidate.password_hash)
     return jsonify("001"), 200
 
 
@@ -195,45 +215,52 @@ def get_exam_question_all(exam_config_id):
     return jsonify([i.serialize for i in exam_question_all]), 200
 
 
-'''
-from werkzeug.utils import secure_filename
-import os
-
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-@exam_setup_api.route("/upload-image", methods = ['POST'])
+@exam_setup_api.route("/exam_result_all/<int:exam_config_id>", methods=['GET'])
 @admin_required
 @jwt_required
-def upload_file():
-    file_name = ""
-    if request.method == 'POST':
-        # check if the post request has the file part
-        print(exam_setup_api.config['UPLOAD_FOLDER'])
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_name = filename
-            file.save(os.path.join(exam_setup_api.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file', filename=filename))
-    return jsonify({
-       "status":"true",
-       "originalName": file_name,
-       "generatedName": file_name,
-       "msg":"Image upload successful",
-       "imageUrl": exam_setup_api.config['UPLOAD_FOLDER']+ file_name}), 200
-'''
+def get_exam_result_all(exam_config_id):
+    exam_owner_id = get_jwt_claims()['id']
+    result = exam_config_management_service.get_exam_result_all(exam_owner_id, exam_config_id)
+    results = []
+    for row_number, row in enumerate(result):
+        results.append({})
+        for column_number, value in enumerate(row):
+            if isinstance(value, datetime):
+                print(row.keys()[column_number])
+                time_zone = results[row_number]["time_zone"]
+                results[row_number][row.keys()[column_number]] = convert_local_timestamp(time_zone, value)
+            elif isinstance(value, Decimal):
+                results[row_number][row.keys()[column_number]] = int(value)
+            else:
+                results[row_number][row.keys()[column_number]] = value
+
+    return jsonify([dict(row) for row in results]), 200
+
+
+@exam_setup_api.route("/exam_result/<int:exam_config_id>/<int:candidate_id>", methods=['GET'])
+@admin_required
+@jwt_required
+def get_exam_result(exam_config_id, candidate_id):
+    print(get_jwt_claims()['id'])
+    exam_owner_id = get_jwt_claims()['id']
+    result = exam_config_management_service.get_exam_result(exam_owner_id, exam_config_id, candidate_id)
+    return jsonify([dict(row) for row in result]), 200
+
+
+@exam_setup_api.route("/exam_marks", methods=['PUT'])
+@admin_required
+@jwt_required
+def update_exam_marks():
+    exam_owner_id = get_jwt_claims()['id']
+    ce_id = request.json.get('id', None)
+    subjective_mark = request.json.get('subjective_mark', None)
+    exam_config_id = request.json.get('exam_config_id', None)
+    exam_config = exam_config_management_service.get_exam_config(exam_config_id, exam_owner_id)
+    if exam_config.exam_owner_id == exam_owner_id:
+        exam_config_management_service.update_exam_marks(ce_id, subjective_mark, exam_config_id)
+    else:
+        return jsonify({"error": "Invalid User."}), 403
+    return jsonify("001"), 200
 
 
 def date_hook(json_dict):
@@ -256,3 +283,57 @@ def convert_utc(timezone, local_time):
 def random_string(string_length=8):
     letters = string.ascii_letters
     return ''.join(random.choice(letters) for i in range(string_length))
+
+
+class ExamResultEncoder(JSONEncoder):
+    def _iterencode(self, o, markers=None):
+        if isinstance(o, decimal.Decimal):
+            # wanted a simple yield str(o) in the next line,
+            # but that would mean a yield on the line with super(...),
+            # which wouldn't work (see my comment below), so...
+            return (str(o) for o in [o])
+        if isinstance(o, datetime):
+            return (convert_local_timestamp(self.time_zone, o) for o in [o])
+        return super(ExamResultEncoder, self)._iterencode(o, markers)
+
+
+def new_alchemy_encoder(revisit_self=False, fields_to_expand=[]):
+    _visited_objs = []
+
+    class AlchemyEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj.__class__, DeclarativeMeta):
+                # don't re-visit self
+                if revisit_self:
+                    if obj in _visited_objs:
+                        return None
+                    _visited_objs.append(obj)
+
+                # go through each field in this SQLalchemy class
+                fields = {}
+                for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
+                    val = obj.__getattribute__(field)
+
+                    # is this field another SQLalchemy object, or a list of SQLalchemy objects?
+                    if isinstance(val.__class__, DeclarativeMeta) or (
+                            isinstance(val, list) and len(val) > 0 and isinstance(val[0].__class__, DeclarativeMeta)):
+                        # unless we're expanding this field, stop here
+                        if field not in fields_to_expand:
+                            # not expanding this field: set it to None and continue
+                            fields[field] = None
+                            continue
+
+                    fields[field] = val
+                # a json-encodable dict
+                return fields
+
+            return json.JSONEncoder.default(self, obj)
+
+    return AlchemyEncoder
+
+
+def convert_local_timestamp(time_zone, utc_time):
+    tz = pytz.timezone(time_zone)
+    local_dt = utc_time.replace(tzinfo=pytz.utc).astimezone(tz)
+    local_dt_none_tz = local_dt.replace(tzinfo=None)
+    return datetime.timestamp(local_dt_none_tz)

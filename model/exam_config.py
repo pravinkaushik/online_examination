@@ -7,6 +7,7 @@ with exam_config_app.app_context():
     db = SQLAlchemy(current_app)
     session_exam_config_app = db.session
 
+
 def dump_datetime(value):
     """Deserialize datetime object into string form for JSON processing."""
     if value is None:

@@ -5,7 +5,7 @@ from flask_jwt_extended import (
     get_jwt_identity, fresh_jwt_required
 )
 from flask import Blueprint
-from service import user_management_service
+from service import user_management_service, email_service
 from service import exam_config_management_service
 from model.user import User
 import requests
@@ -86,7 +86,6 @@ def login():
     if user is None:
         print("user.id")
         return jsonify({"error": "Bad username or password"}), 401
-    print(user.id)
     # Create an example UserObject
     user = UserObject(id=user.id, email=user.email, roles=['exam_owner'])
 
@@ -102,7 +101,6 @@ def login():
         'current_identity': email,
         'role': 'exam_owner'
     }
-    print(ret)
     return jsonify(ret), 200
 
 
@@ -112,11 +110,10 @@ def signup_social_media():
     auth_token = request.json.get('auth_token', None)
     email = isValidSocialToken(auth_token, provider)
 
-    user_obj = user_management_service.validate_user_email(email)
+    user_obj = user_management_service.validate_user_email_all_status(email)
     if user_obj is None:
         user_obj = User(0, email, random_string(), "", 1, 1)
         user_management_service.create_user(user_obj)
-        user_obj = user_management_service.validate_user_email(email)
 
     # Create an example UserObject
     user = UserObject(id=user_obj.id, email=user_obj.email, roles=['exam_owner'])
@@ -127,7 +124,6 @@ def signup_social_media():
         'current_identity': email,
         'role': 'exam_owner'
     }
-    print(ret)
     return jsonify(ret), 200
 
 
@@ -135,10 +131,64 @@ def signup_social_media():
 def signup():
     email = request.json.get('email', None)
     password = request.json.get('password', None)
-    ret = {
-        'message': "Activation link has been send to Your Email."
-    }
-    return jsonify(ret), 200
+    user_obj = user_management_service.validate_user_email_all_status(email)
+    ret = None
+    r_code = 200
+    user_obj = None
+    if user_obj is None:
+        random_str = random_string()+"_"+email
+        user_obj = User(0, email, password, random_str, 0, 0)
+        user_management_service.create_user(user_obj)
+        email_service.send_activation_email(email, random_str)
+        ret = {'message': "Activation link has been send to Your Email."}
+    else:
+        message = "You are already registered. Please use forgot password."
+        ret = {'error': "You are already registered with us. Please use forgot password."}
+        r_code = 403
+
+    return jsonify(ret), r_code
+
+
+@user_management_api.route('/forgot_password', methods=['POST'])
+def forgot_password():
+    email = request.json.get('email', None)
+    password = request.json.get('password', None)
+    user_obj = user_management_service.validate_user_email(email)
+    ret = None
+    r_code = 200
+    if user_obj is None:
+        ret = {'error': "We are unable to find entered email. Please sign-up to proceed."}
+        r_code = 403
+    else:
+        random_str = random_string() + "_" + email
+        user_management_service.reset_user_password(email, password, random_str)
+        email_service.send_activation_email(email, random_str)
+        ret = {'message': "Activation link has been send to Your Email."}
+
+    return jsonify(ret), r_code
+
+
+@user_management_api.route('/activate', methods=['POST'])
+def activate():
+    key = request.json.get('key', None)
+    user_obj = user_management_service.activate_user(key)
+    ret = None
+    r_code = 200
+    if user_obj != 1:
+        ret = {'error': "We are unable to find entered email. Please sign-up to proceed."}
+        r_code = 403
+    else:
+        key_arr = key.split("_")
+        email_service.send_welcome(key_arr[1])
+        user_obj = user_management_service.validate_user_email_all_status(key_arr[1])
+        user = UserObject(id=user_obj.id, email=user_obj.email, roles=['exam_owner'])
+        ret = {
+            'access_token': create_access_token(identity=user, fresh=True),
+            'refresh_token': create_refresh_token(identity=user),
+            'current_identity': user.email,
+            'role': 'exam_owner'
+        }
+    return jsonify(ret), r_code
 
 
 # Refresh token endpoint. This will generate a new access token from
@@ -194,8 +244,18 @@ def protected():
     return jsonify(ret), 200
 
 
+@user_management_api.route('/contact', methods=['POST'])
+def contact():
+    name = request.json.get('name', None)
+    email = request.json.get('email', None)
+    message = request.json.get('message', None)
+    email_service.send_enquiry(name, email, message)
+    r_code = 200
+    return jsonify("success"), r_code
+
+
 def isValidSocialToken(token, provider):
-    if (provider == "FB"):
+    if provider == "FB":
         API_ENDPOINT = "https://graph.facebook.com/me?fields=email,name&access_token=" + token
         r = requests.get(url=API_ENDPOINT)
         data = json.loads(r.text)

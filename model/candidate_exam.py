@@ -19,12 +19,13 @@ class CandidateExam(db.Model):
     is_choice4_selected = db.Column(db.Integer)
     is_choice5_selected = db.Column(db.Integer)
     answer = db.Column(db.String(128))
+    subjective_mark = db.Column(db.Integer)
 
     def __repr__(self):
         return '<CandidateExam {}>'.format(self.exam_questions_id)
 
     def __init__(self, id, exam_questions_id, candidate_id, exam_config_id, is_choice1_selected, is_choice2_selected,
-                 is_choice3_selected, is_choice4_selected, is_choice5_selected, answer,
+                 is_choice3_selected, is_choice4_selected, is_choice5_selected, answer, subjective_mark,
                  *args, **kwargs):
         self.id = id
         self.exam_questions_id = exam_questions_id
@@ -36,6 +37,7 @@ class CandidateExam(db.Model):
         self.is_choice4_selected = is_choice4_selected
         self.is_choice5_selected = is_choice5_selected
         self.answer = answer
+        self.subjective_mark = subjective_mark
 
     @property
     def serialize(self):
@@ -50,6 +52,6 @@ class CandidateExam(db.Model):
            'is_choice3_selected': self.is_choice3_selected,
            'is_choice4_selected': self.is_choice4_selected,
            'is_choice5_selected': self.is_choice5_selected,
-           'answer': self.answer
-
+           'answer': self.answer,
+           'subjective_mark': self.subjective_mark,
        }
