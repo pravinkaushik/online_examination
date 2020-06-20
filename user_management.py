@@ -246,6 +246,7 @@ def protected():
 
 @user_management_api.route('/contact', methods=['POST'])
 def contact():
+    print(request.json)
     name = request.json.get('name', None)
     email = request.json.get('email', None)
     message = request.json.get('message', None)

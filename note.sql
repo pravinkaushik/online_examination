@@ -90,6 +90,8 @@ CREATE TABLE `user` (
 -- pip install Flask-Mail
 -- pip install requests
 -- pip install Flask-Mail
+-- pip install flasgger
+
 CREATE OR REPLACE
 ALGORITHM = UNDEFINED VIEW `RESULT_LIST_VIEW` AS
 SELECT ce.candidate_id, cand.c_name, cand.email, cand.start_time, cand.end_time, ce.exam_config_id, eq.question_type, eq.id,
