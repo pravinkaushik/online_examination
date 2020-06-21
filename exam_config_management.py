@@ -30,7 +30,7 @@ def admin_required(fn):
         verify_jwt_in_request()
         claims = get_jwt_claims()
         if claims['roles'][0] != 'exam_owner':
-            return jsonify({"error": "Invalid User"}), 403
+            return jsonify({"error": "ERR0009"}), 401
         else:
             return fn(*args, **kwargs)
 

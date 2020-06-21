@@ -20,7 +20,7 @@ def candidate_required(fn):
         verify_jwt_in_request()
         claims = get_jwt_claims()
         if claims['roles'][0] != 'candidate':
-            return jsonify(error='Not valid candidate!'), 403
+            return jsonify(error='ERR0007'), 403
         else:
             return fn(*args, **kwargs)
 
@@ -128,15 +128,15 @@ def validate_time_frame(candidate_id, exam_config_id):
     dt = datetime.utcnow()
     exam_config = exam_config_management_service.get_exam_config_by_id(exam_config_id)
     if exam_config.end_time < dt:
-        return jsonify({"error": "You are too late, Examination interval has been passed"}), 403
+        return jsonify({"error": "ERR0002"}), 403
 
     if exam_config.start_time > dt:
-        return jsonify({"error": "Examination has not started yet"}), 403
+        return jsonify({"error": "ERR0003"}), 403
 
     candidate = exam_config_management_service.get_candidate_by_eid_cid(candidate_id, exam_config_id)
     if candidate.start_time:
         consumed_time = (dt - candidate.start_time).total_seconds()
         if consumed_time > exam_config.duration_minute * 60:
-            return jsonify({"error": "Examination has not started yet"}), 403
+            return jsonify({"error": "ERR0003"}), 403
 
     return exam_config

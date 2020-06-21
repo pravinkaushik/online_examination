@@ -60,11 +60,11 @@ def login_exam():
     password = request.json.get('password', None)
     candidate = exam_config_management_service.candidate_login(email, exam_config_id, password)
     if candidate is None:
-        return jsonify({"error": "Bad username or password"}), 401
+        return jsonify({"error": "ERR0005"}), 401
     if candidate == "C":
-        return jsonify({"error": "You Have Already Finished Examination"}), 403
+        return jsonify({"error": "ERR0006"}), 403
     if candidate == "TO":
-        return jsonify({"error": "You are too late, Examination interval has been passed"}), 403
+        return jsonify({"error": "ERR0002"}), 403
 
     user = UserObject(id=candidate.id, email=candidate.email, roles=['candidate'])
     ret = {
@@ -78,14 +78,12 @@ def login_exam():
 
 @user_management_api.route('/login', methods=['POST'])
 def login():
-    print("===============")
     email = request.json.get('email', None)
     password = request.json.get('password', None)
-    print("===============" + email + password)
     user = user_management_service.validate_user(email, password)
     if user is None:
         print("user.id")
-        return jsonify({"error": "Bad username or password"}), 401
+        return jsonify({"error": "ERR0005"}), 401
     # Create an example UserObject
     user = UserObject(id=user.id, email=user.email, roles=['exam_owner'])
 
@@ -157,13 +155,13 @@ def forgot_password():
     ret = None
     r_code = 200
     if user_obj is None:
-        ret = {'error': "We are unable to find entered email. Please sign-up to proceed."}
+        ret = {'error': "ERR0004"}
         r_code = 403
     else:
         random_str = random_string() + "_" + email
         user_management_service.reset_user_password(email, password, random_str)
         email_service.send_activation_email(email, random_str)
-        ret = {'message': "Activation link has been send to Your Email."}
+        ret = {'message': "SUC0001"}
 
     return jsonify(ret), r_code
 
@@ -175,7 +173,7 @@ def activate():
     ret = None
     r_code = 200
     if user_obj != 1:
-        ret = {'error': "We are unable to find entered email. Please sign-up to proceed."}
+        ret = {'error': "ERR0004"}
         r_code = 403
     else:
         key_arr = key.split("_")
@@ -215,7 +213,7 @@ def fresh_login():
 
     user = user_management_service.validate_user(email, password)
     if user is None:
-        return jsonify({"msg": "Bad username or password"}), 401
+        return jsonify({"error": "ERR0005"}), 401
 
     # Create an example UserObject
     user = UserObject(id=user.id, email=user.email, roles=['exam_owner'])
