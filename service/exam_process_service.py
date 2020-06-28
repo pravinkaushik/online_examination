@@ -1,9 +1,9 @@
 from sqlalchemy.ext.compiler import compiles
 from datetime import datetime
 
-from model import candidate_exam, exam_questions
-from model.candidate_exam import session_candidate_exam_app, CandidateExam
-from model.candidate import session_candidate_app, Candidate
+from webApp.model import candidate_exam, exam_questions
+from webApp.model.candidate_exam import session_candidate_exam_app, CandidateExam
+from webApp.model.candidate import session_candidate_app, Candidate
 
 
 ###################################################################

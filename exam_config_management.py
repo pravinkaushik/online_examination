@@ -10,13 +10,13 @@ import json
 from json import JSONEncoder
 from decimal import Decimal
 import random
-
+import sys
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
-from model.exam_config import ExamConfig
-from model.candidate import Candidate
-from model.exam_questions import ExamQuestions
-from service import exam_config_management_service, email_service
+from webApp.model.exam_config import ExamConfig
+from webApp.model.candidate import Candidate
+from webApp.model.exam_questions import ExamQuestions
+from webApp.service import exam_config_management_service, email_service
 from functools import wraps
 from flask import Flask, flash, request, redirect, url_for
 import pytz
@@ -113,6 +113,8 @@ def create_candidate():
     candidate = Candidate(**j)
     candidate.exam_owner_id = get_jwt_claims()['id']
     candidate.password_hash = random_string()
+    candidate.start_time = None
+    candidate.end_time = None
     exam_config = exam_config_management_service.get_exam_config_by_id(candidate.exam_config_id)
     email_service.send_email_invitation(candidate.email, candidate.exam_config_id, exam_config.exam_name,
                                         candidate.password_hash, exam_config.exam_title)
@@ -120,7 +122,7 @@ def create_candidate():
     return jsonify("001"), 200
 
 
-@exam_setup_api.route("/candidate_all/<int:candidate_id>", methods=['GET'])
+@exam_setup_api.route("/resend_invitation/<int:candidate_id>", methods=['GET'])
 @admin_required
 @jwt_required
 def resend_invitation(candidate_id):
@@ -128,7 +130,7 @@ def resend_invitation(candidate_id):
     candidate = exam_config_management_service.get_candidate(candidate_id, exam_owner_id)
     exam_config = exam_config_management_service.get_exam_config_by_id(candidate.exam_config_id)
     email_service.send_email_invitation(candidate.email, candidate.exam_config_id, exam_config.exam_name,
-                                        candidate.password_hash)
+                                        candidate.password_hash, exam_config.exam_title)
     return jsonify("001"), 200
 
 
@@ -209,7 +211,6 @@ def get_exam_question(exam_question_id):
 @admin_required
 @jwt_required
 def get_exam_question_all(exam_config_id):
-    print(get_jwt_claims()['id'])
     exam_owner_id = get_jwt_claims()['id']
     exam_question_all = exam_config_management_service.get_exam_question_all(exam_owner_id, exam_config_id)
     return jsonify([i.serialize for i in exam_question_all]), 200
@@ -226,7 +227,6 @@ def get_exam_result_all(exam_config_id):
         results.append({})
         for column_number, value in enumerate(row):
             if isinstance(value, datetime):
-                print(row.keys()[column_number])
                 time_zone = results[row_number]["time_zone"]
                 results[row_number][row.keys()[column_number]] = convert_local_timestamp(time_zone, value)
             elif isinstance(value, Decimal):
@@ -241,7 +241,6 @@ def get_exam_result_all(exam_config_id):
 @admin_required
 @jwt_required
 def get_exam_result(exam_config_id, candidate_id):
-    print(get_jwt_claims()['id'])
     exam_owner_id = get_jwt_claims()['id']
     result = exam_config_management_service.get_exam_result(exam_owner_id, exam_config_id, candidate_id)
     return jsonify([dict(row) for row in result]), 200

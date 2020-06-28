@@ -4,8 +4,6 @@ import os
 
 exam_questions_app = Flask(__name__)
 with exam_questions_app.app_context():
-    config_obj = os.environ.get("DIAG_CONFIG_MODULE", "config")
-    exam_questions_app.config.from_object(config_obj)
     db = SQLAlchemy(current_app)
     session_exam_questions_app = db.session
 

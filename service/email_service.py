@@ -8,8 +8,10 @@ script_dir = os.path.dirname(__file__)
 # password_placeholder
 user_app = Flask(__name__)
 with user_app.app_context():
-    config_obj = os.environ.get("DIAG_CONFIG_MODULE", "config")
-    current_app.config.from_object(config_obj)
+    # config_obj = os.environ.get("DIAG_CONFIG_MODULE", "configx.test")
+    current_app.config.from_pyfile('/var/www/html/webApp/webApp/configx/test.py')
+    # current_app.config.from_object('webApp.config.ProdConfig')
+    # current_app.config.from_object(config_obj)
     mail = Mail(current_app)
 
     email_confirmation = None
@@ -41,7 +43,7 @@ with user_app.app_context():
 
 
     def send_email_invitation(recipient, exam_id, exam_name, password, exam_title):
-        html_data = email_invitation.replace("examination_name_placeholder", exam_name)
+        html_data = email_invitation.replace("exam_name_placeholder", exam_name)
         html_data = html_data.replace("exam_title_placeholder", exam_title)
         html_data = html_data.replace("exam_id_placeholder", str(exam_id))
         html_data = html_data.replace("email_placeholder", recipient)
@@ -62,8 +64,11 @@ with user_app.app_context():
 
 
     def send_enquiry(name, email, message):
+        print("Sending email ===========================")
         msg = Message("Email enquiry" + name, sender=current_app.config["MAIL_USERNAME"],
                       recipients=["pravinkaushik.bsp@gmail.com"])
         msg.body = "email-" + email + " message-" + message
+
+        print("Sending email1 ===========================" + current_app.config["MAIL_USERNAME"])
         mail.send(msg)
         return "Sent"

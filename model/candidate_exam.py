@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, current_app
-from model.exam_questions import ExamQuestions
+from webApp.model.exam_questions import ExamQuestions
 
 candidate_exam_app = Flask(__name__)
 with candidate_exam_app.app_context():

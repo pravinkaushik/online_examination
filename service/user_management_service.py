@@ -1,4 +1,4 @@
-from model.user import User, session_user_app
+from webApp.model.user import User, session_user_app
 
 
 def validate_user(email, password_hash):

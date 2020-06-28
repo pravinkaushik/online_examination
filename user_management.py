@@ -5,9 +5,9 @@ from flask_jwt_extended import (
     get_jwt_identity, fresh_jwt_required
 )
 from flask import Blueprint
-from service import user_management_service, email_service
-from service import exam_config_management_service
-from model.user import User
+from webApp.service import user_management_service, email_service
+from webApp.service import exam_config_management_service
+from webApp.model.user import User
 import requests
 import json
 import random

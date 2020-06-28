@@ -21,13 +21,16 @@ class Candidate(db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.email)
 
-    def __init__(self, id, email, exam_config_id, exam_owner_id, password_hash, c_name, *args, **kwargs):
+    def __init__(self, id, email, exam_config_id, exam_owner_id, password_hash, c_name, start_time, end_time, *args,
+                 **kwargs):
         self.id = id
         self.email = email
         self.exam_config_id = exam_config_id
         self.exam_owner_id = exam_owner_id
         self.password_hash = password_hash
         self.c_name = c_name
+        self.end_time = end_time
+        self.start_time = start_time
 
     @property
     def serialize(self):
@@ -37,6 +40,8 @@ class Candidate(db.Model):
             'exam_owner_id': self.exam_owner_id,
             'email': self.email,
             'c_name': self.c_name,
-            #           'password_hash': self.password_hash,
+            'end_time': self.end_time,
+            'start_time': self.start_time,
+            'password_hash': self.password_hash,
             'exam_config_id': self.exam_config_id
         }

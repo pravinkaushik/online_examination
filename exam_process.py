@@ -4,10 +4,10 @@ from flask_jwt_extended import (
 )
 import json
 from flask_jwt_extended import jwt_required
-from model.candidate_exam import CandidateExam
-from model.exam_config import ExamConfig
-from service import exam_process_service
-from service import exam_config_management_service
+from webApp.model.candidate_exam import CandidateExam
+from webApp.model.exam_config import ExamConfig
+from webApp.service import exam_process_service
+from webApp.service import exam_config_management_service
 from functools import wraps
 from datetime import datetime
 

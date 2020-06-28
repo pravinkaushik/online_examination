@@ -1,7 +1,7 @@
-from model.candidate_exam import CandidateExam
-from model.exam_config import ExamConfig, session_exam_config_app
-from model.candidate import session_candidate_app, Candidate
-from model.exam_questions import session_exam_questions_app, ExamQuestions
+from webApp.model.candidate_exam import CandidateExam
+from webApp.model.exam_config import ExamConfig, session_exam_config_app
+from webApp.model.candidate import session_candidate_app, Candidate
+from webApp.model.exam_questions import session_exam_questions_app, ExamQuestions
 from datetime import datetime
 
 
