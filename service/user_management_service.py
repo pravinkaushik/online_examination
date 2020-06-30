@@ -1,4 +1,12 @@
 from webApp.model.user import User, session_user_app
+from flask import Flask, current_app
+
+candidate_app = Flask(__name__)
+
+with candidate_app.app_context():
+    @candidate_app.teardown_appcontext
+    def shutdown_session(exception=None):
+        session_user_app.remove()
 
 
 def validate_user(email, password_hash):

@@ -4,7 +4,20 @@ from datetime import datetime
 from webApp.model import candidate_exam, exam_questions
 from webApp.model.candidate_exam import session_candidate_exam_app, CandidateExam
 from webApp.model.candidate import session_candidate_app, Candidate
+from webApp.model.exam_config import ExamConfig, session_exam_config_app
+from webApp.model.exam_questions import session_exam_questions_app, ExamQuestions
 
+from flask import Flask, current_app
+
+candidate_app = Flask(__name__)
+
+with candidate_app.app_context():
+    @candidate_app.teardown_appcontext
+    def shutdown_session(exception=None):
+        session_candidate_exam_app.remove()
+        session_candidate_app.remove()
+        session_exam_questions_app.remove()
+        session_exam_config_app.remove()
 
 ###################################################################
 
@@ -20,7 +33,7 @@ def prepare_candidate_exam(exam_config_id, candidate_id):
             {'val1': candidate_id, 'val2': exam_config_id})
         result = session_candidate_exam_app.execute(
             'INSERT INTO candidate_exam (exam_questions_id, candidate_id, exam_config_id) SELECT id, :val1, '
-            'exam_config_id from test.exam_questions where exam_config_id = :val2',
+            'exam_config_id from exam_questions where exam_config_id = :val2',
             {'val1': candidate_id, 'val2': exam_config_id})
 
         session_candidate_exam_app.commit()

@@ -2,7 +2,19 @@ from webApp.model.candidate_exam import CandidateExam
 from webApp.model.exam_config import ExamConfig, session_exam_config_app
 from webApp.model.candidate import session_candidate_app, Candidate
 from webApp.model.exam_questions import session_exam_questions_app, ExamQuestions
+from webApp.model.candidate_exam import session_candidate_exam_app, CandidateExam
 from datetime import datetime
+from flask import Flask, current_app
+
+candidate_app = Flask(__name__)
+
+with candidate_app.app_context():
+    @candidate_app.teardown_appcontext
+    def shutdown_session(exception=None):
+        session_candidate_exam_app.remove()
+        session_candidate_app.remove()
+        session_exam_questions_app.remove()
+        session_exam_config_app.remove()
 
 
 def create_exam_config(exam_config):
@@ -94,6 +106,9 @@ def candidate_login(email, exam_config_id, password_hash):
         exam_config = session_exam_config_app.query(ExamConfig).\
             filter_by(id=candidate.exam_config_id, exam_owner_id=candidate.exam_owner_id).first()
         session_exam_config_app.commit()
+        print("Cand Login")
+        print(exam_config.end_time)
+        print(dt)
         if exam_config.end_time < dt:
             return "TO"
     return candidate

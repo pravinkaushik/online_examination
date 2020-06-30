@@ -266,7 +266,8 @@ def date_hook(json_dict):
     for (key, value) in json_dict.items():
         try:
             if key == 'start_time' or key == 'end_time':
-                json_dict[key] = datetime.fromtimestamp(value)
+                utc_dt = datetime.utcfromtimestamp(value)
+                json_dict[key] = utc_dt
         except:
             pass
     return json_dict

@@ -54,6 +54,15 @@ class ExamConfig(db.Model):
 
     @property
     def serialize(self):
+       print("Start serialize...")
+       try:
+           print(self)
+           print("Start serialize 2...")
+
+       except Exception as e: # work on python 3.x
+           print('Failed to Pravin Kaushik X: ')
+           print(str(e))
+
        """Return object data in easily serializable format"""
        s = convert_local(self.time_zone, self.start_time)
        e = convert_local(self.time_zone, self.end_time)

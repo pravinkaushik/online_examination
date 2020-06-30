@@ -11,7 +11,7 @@ from flask_mail import Mail
 config_obj = os.environ.get("DIAG_CONFIG_MODULE", "config")
 app = Flask(__name__)
 app.config.from_object(config_obj)
-
+app.config['PROPAGATE_EXCEPTIONS'] = True
 db = SQLAlchemy(app)
 mail = Mail(app)
 
