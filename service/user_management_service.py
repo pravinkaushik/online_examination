@@ -4,9 +4,12 @@ from flask import Flask, current_app
 candidate_app = Flask(__name__)
 
 with candidate_app.app_context():
-    @candidate_app.teardown_appcontext
+    @candidate_app.teardown_request
     def shutdown_session(exception=None):
         session_user_app.remove()
+        if exception and session_user_app.is_active:
+            session_user_app.rollback()
+
 
 
 def validate_user(email, password_hash):

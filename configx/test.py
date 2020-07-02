@@ -1,4 +1,3 @@
-
 DEBUG = False
 TESTING = False
 CSRF_ENABLED = True
@@ -7,7 +6,7 @@ JWT_ACCESS_TOKEN_EXPIRES = False
 SECRET_KEY = '98930a22418'
 PROPAGATE_EXCEPTIONS = True
 SQLALCHEMY_POOL_TIMEOUT=20
-SQLALCHEMY_DATABASE_URI = 'mysql://root:98930a22418@localhost/onlineexam'
+SQLALCHEMY_DATABASE_URI = 'mysql://root:test1234@localhost/test'
 #UPLOAD_FOLDER = '/home/pravin/upload'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 MAIL_SERVER='smtp.easyonlineexam.com'

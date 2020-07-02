@@ -82,7 +82,6 @@ def login():
     password = request.json.get('password', None)
     user = user_management_service.validate_user(email, password)
     if user is None:
-        print("user.id")
         return jsonify({"error": "ERR0005"}), 401
     # Create an example UserObject
     user = UserObject(id=user.id, email=user.email, roles=['exam_owner'])
@@ -244,7 +243,6 @@ def protected():
 
 @user_management_api.route('/contact', methods=['POST'])
 def contact():
-    print(request.json)
     name = request.json.get('name', None)
     email = request.json.get('email', None)
     message = request.json.get('message', None)

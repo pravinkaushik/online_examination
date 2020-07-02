@@ -127,16 +127,24 @@ def get_remain_end_time(exam_config_id):
 def validate_time_frame(candidate_id, exam_config_id):
     dt = datetime.utcnow()
     exam_config = exam_config_management_service.get_exam_config_by_id(exam_config_id)
+    print(dt)
+    print(exam_config.start_time)
+    print(exam_config.end_time)
     if exam_config.end_time < dt:
+        print("exam_config.end_time < dt")
         return jsonify({"error": "ERR0002"}), 403
 
     if exam_config.start_time > dt:
+        print("exam_config.start_time > dt")
         return jsonify({"error": "ERR0003"}), 403
 
     candidate = exam_config_management_service.get_candidate_by_eid_cid(candidate_id, exam_config_id)
     if candidate.start_time:
         consumed_time = (dt - candidate.start_time).total_seconds()
         if consumed_time > exam_config.duration_minute * 60:
+            print("consumed_time")
+            print(candidate.start_time)
+            print(consumed_time)
             return jsonify({"error": "ERR0003"}), 403
 
     return exam_config

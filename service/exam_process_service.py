@@ -12,12 +12,20 @@ from flask import Flask, current_app
 candidate_app = Flask(__name__)
 
 with candidate_app.app_context():
-    @candidate_app.teardown_appcontext
+    @candidate_app.teardown_request
     def shutdown_session(exception=None):
         session_candidate_exam_app.remove()
         session_candidate_app.remove()
         session_exam_questions_app.remove()
         session_exam_config_app.remove()
+        if exception and session_candidate_exam_app.is_active:
+            session_candidate_exam_app.rollback()
+        if exception and session_candidate_app.is_active:
+            session_candidate_app.rollback()
+        if exception and session_exam_questions_app.is_active:
+            session_exam_questions_app.rollback()
+        if exception and session_exam_config_app.is_active:
+            session_exam_config_app.rollback()
 
 ###################################################################
 
