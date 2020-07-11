@@ -14,6 +14,7 @@ app = Flask(__name__)
 #app.config.from_object('config.ProdConfig')
 app.config.from_pyfile('/var/www/html/webApp/webApp/configx/test.py')
 app.config['PROPAGATE_EXCEPTIONS'] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 mail = Mail(app)
 

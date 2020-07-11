@@ -134,6 +134,18 @@ def resend_invitation(candidate_id):
     return jsonify("001"), 200
 
 
+@exam_setup_api.route("/publish_result/<int:candidate_id>/<int:marks>", methods=['GET'])
+@admin_required
+@jwt_required
+def publish_result(candidate_id, marks):
+    exam_owner_id = get_jwt_claims()['id']
+    candidate = exam_config_management_service.get_candidate(candidate_id, exam_owner_id)
+    exam_config = exam_config_management_service.get_exam_config_by_id(candidate.exam_config_id)
+    email_service.publish_result(candidate.email, candidate.exam_config_id, exam_config.exam_name, marks,
+                                        exam_config.exam_title)
+    return jsonify("001"), 200
+
+
 @exam_setup_api.route("/candidate", methods=['PUT'])
 @admin_required
 @jwt_required

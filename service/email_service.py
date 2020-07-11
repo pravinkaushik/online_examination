@@ -17,7 +17,6 @@ with user_app.app_context():
     email_confirmation = None
     email_confirmation_path = "html/email_confirmation.html"
     ec_abs_file_path = os.path.join(script_dir, email_confirmation_path)
-
     with open(ec_abs_file_path, 'r') as file:
         email_confirmation = file.read().replace('\n', '')
 
@@ -32,6 +31,12 @@ with user_app.app_context():
     wc_abs_file_path = os.path.join(script_dir, welcome_path)
     with open(wc_abs_file_path, 'r') as file:
         welcome = file.read().replace('\n', '')
+
+    result = None
+    result_path = "html/result.html"
+    ei_abs_file_path = os.path.join(script_dir, result_path)
+    with open(ei_abs_file_path, 'r') as file:
+        result = file.read().replace('\n', '')
 
 
     def send_activation_email(recipient, random_str):
@@ -70,5 +75,18 @@ with user_app.app_context():
         msg.body = "email-" + email + " message-" + message
 
         print("Sending email1 ===========================" + current_app.config["MAIL_USERNAME"])
+        mail.send(msg)
+        return "Sent"
+
+
+    def publish_result(recipient, exam_id, exam_name, marks, exam_title):
+        html_data = result.replace("exam_name_placeholder", exam_name)
+        html_data = html_data.replace("exam_title_placeholder", exam_title)
+        html_data = html_data.replace("exam_id_placeholder", str(exam_id))
+        html_data = html_data.replace("email_placeholder", recipient)
+        html_data = html_data.replace("marks_placeholder", str(marks))
+
+        msg = Message("Result has been published", sender=current_app.config["MAIL_USERNAME"], recipients=[recipient])
+        msg.html = html_data
         mail.send(msg)
         return "Sent"
